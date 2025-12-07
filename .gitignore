@@ -1,0 +1,31 @@
+# Build results
+bin/
+obj/
+out/
+artifacts/
+
+# Visual Studio stuff
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# Visual Studio Code
+.vscode/
+.history/
+
+# ASP.NET logs
+logs/
+*.log
+
+# IIS
+*.vspscc
+*.vssscc
+
+# NuGet packages
+*.nupkg
+*.snupkg
+packages/
+*.nuget.props
+*.nuget.targets

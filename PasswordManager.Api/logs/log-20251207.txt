@@ -1,5 +1,0 @@
-2025-12-07 13:07:31.792 +05:30 [INF] Now listening on: http://localhost:5268
-2025-12-07 13:07:31.823 +05:30 [INF] Application started. Press Ctrl+C to shut down.
-2025-12-07 13:07:31.824 +05:30 [INF] Hosting environment: Development
-2025-12-07 13:07:31.825 +05:30 [INF] Content root path: C:\Users\User\Downloads\Experiments\password-manager\PasswordManager.Api
-2025-12-07 13:23:13.284 +05:30 [INF] Application is shutting down...
