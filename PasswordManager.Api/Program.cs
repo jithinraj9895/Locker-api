@@ -17,7 +17,8 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connect
 builder.Services.AddControllers();
 builder.Services.AddScoped<IVaultRepository, VaultRepository>();
 
-var allowedOrigin = "";
+var allowedOrigin = builder.Configuration["FRONTEND_URL"]
+                    ?? "http://localhost:5173";
 
 builder.Services.AddCors(options =>
 {
