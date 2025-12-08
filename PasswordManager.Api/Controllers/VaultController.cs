@@ -5,64 +5,84 @@ using Microsoft.Extensions.Logging;
 [Route("api/[controller]")]
 public class VaultController : ControllerBase
 {
-    private readonly ILogger<VaultController> _logger;
+    
     private readonly IVaultRepository _vaultRepository;
+    private readonly ILogger<VaultController> _logger;
 
-    public VaultController(
-        ILogger<VaultController> logger,
-        IVaultRepository vaultRepository)
+    public VaultController(IVaultRepository vaultRepository, ILogger<VaultController> logger)
     {
-        _logger = logger;
         _vaultRepository = vaultRepository;
+        _logger = logger;
     }
 
     [HttpGet]
-    public IActionResult Health()
+    public IActionResult Get() => Ok("Works fine!");
+
+
+    [HttpGet("all")]
+    public async Task<IActionResult> GetAll()
     {
-        _logger.LogInformation("Health check endpoint called.");
-        return Ok("API is working 🚀");
+        try
+        {
+            _logger.LogInformation("Fetching all the data from Database.");
+            var allVaults = await _vaultRepository.GetAllVaultAsync();
+            return Ok(allVaults);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching all vaults");
+            return StatusCode(500, "An error occurred while fetching vaults.");
+        }
     }
 
     [HttpGet("{vaultId}")]
     public async Task<IActionResult> GetVault(string vaultId)
     {
-        _logger.LogInformation("Fetching vault with ID: {vaultId}", vaultId);
-
-        var vault = await _vaultRepository.GetVaultAsync(vaultId);
-
-        if (vault == null)
+        try
         {
-            _logger.LogWarning("Vault not found: {vaultId}", vaultId);
-            return NotFound(new { message = "Vault not found" });
+            var vault = await _vaultRepository.GetVaultAsync(vaultId);
+            if (vault == null) return NotFound();
+            return Ok(vault);
         }
-
-        _logger.LogInformation("Vault {vaultId} fetched successfully", vaultId);
-        return Ok(vault);
-    }
-
-    [HttpGet("all")]
-    public async Task<IActionResult> GetAll()
-    {
-        _logger.LogInformation("Fetching all vaults");
-        var result = await _vaultRepository.GetAllVaultAsync();
-        return Ok(result);
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error fetching vault {vaultId}");
+            return StatusCode(500, "An error occurred while fetching the vault.");
+        }
     }
 
     [HttpPost]
+    [EnableRateLimiting("vaultLimit")]
     public async Task<IActionResult> Add([FromBody] Vault vault)
     {
-        _logger.LogInformation("Request received to create a new vault.");
-
-        if (vault == null || string.IsNullOrWhiteSpace(vault.VaultId))
+        if (vault == null || string.IsNullOrEmpty(vault.VaultId))
+            return BadRequest("VaultId is required");
+        try
         {
-            _logger.LogWarning("Invalid vault payload.");
-            return BadRequest(new { message = "VaultId is required." });
+            await _vaultRepository.CreateVaultAsync(vault);
+            return Ok(new { success = true });
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating vault");
+            return StatusCode(500, "An error occurred while creating the vault.");
+        }
+    }
 
-        await _vaultRepository.CreateVaultAsync(vault);
-
-        _logger.LogInformation("Vault created with ID: {vaultId}", vault.VaultId);
-
-        return Ok(new { success = true, vaultId = vault.VaultId });
+    [HttpPost("update")]
+    public async Task<IActionResult> Update([FromBody] Vault vault)
+    {
+        if (vault == null || string.IsNullOrEmpty(vault.VaultId))
+            return BadRequest("VaultId is required");
+        try
+        {
+            await _vaultRepository.UpdateVaultAsync(vault);
+            return Ok(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating vault");
+            return StatusCode(500, "An error occurred while updating the vault.");
+        }
     }
 }
