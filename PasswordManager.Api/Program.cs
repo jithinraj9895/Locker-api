@@ -12,7 +12,7 @@ builder.Host.UseSerilog((context, config) =>
 
 var connectionString = builder.Configuration.GetConnectionString("PgConnectionString");
 // Read env variables with fallback defaults
-int permitLimit = int.TryParse(Environment.GetEnvironmentVariable("RATE_LIMIT_PERMIT"), out var p) ? p : 4;
+int permitLimit = int.TryParse(Environment.GetEnvironmentVariable("RATE_LIMIT_PERMIT"), out var p) ? p : 50;
 int windowHour = int.TryParse(Environment.GetEnvironmentVariable("RATE_LIMIT_WINDOW_HOURS"), out var w) ? w : 1;
 // Add services to the container.
 builder.Services.AddOpenApi();
@@ -56,14 +56,14 @@ builder.Services.AddRateLimiter(options =>
     {
         context.HttpContext.Response.StatusCode = 429; // Too Many Requests
         await context.HttpContext.Response.WriteAsync(
-            "Too many requests. Try again 3600s later.", token);
+            "Too many requests. Try again later.", token);
     };
     options.AddPolicy("vaultLimit", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
             httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 1,
+                PermitLimit = 10,
                 Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0
             }));

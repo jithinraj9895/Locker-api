@@ -11,6 +11,7 @@ public class VaultRepository : IVaultRepository
     }
     public async Task CreateVaultAsync(Vault vault)
     {
+        vault.UpdatedAt = DateTimeOffset.UtcNow;
         _context.Vaults.Add(vault);
         await _context.SaveChangesAsync();
     }
@@ -27,6 +28,7 @@ public class VaultRepository : IVaultRepository
 
     public async Task UpdateVaultAsync(Vault vault)
     {
+        vault.UpdatedAt = DateTimeOffset.UtcNow;
         _context.Vaults.Update(vault);
         await _context.SaveChangesAsync();
     }
