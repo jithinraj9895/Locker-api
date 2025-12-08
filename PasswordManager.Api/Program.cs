@@ -34,30 +34,18 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add global rate limiting
+// Add global rate limiti
 builder.Services.AddRateLimiter(options =>
 {
-    // Global limiter: 10 requests per minute per client IP
-    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
-    {
-        var clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-
-        return RateLimitPartition.GetFixedWindowLimiter(clientIp, _ => new FixedWindowRateLimiterOptions
-        {
-            PermitLimit = permitLimit,                // max 10 requests
-            Window = TimeSpan.FromHours(windowHour), // per 1 minute
-            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-            QueueLimit = 0                   // reject excess immediately
-        });
-    });
-
-    // Response when limit is exceeded
-    options.OnRejected = async (context, token) =>
-    {
-        context.HttpContext.Response.StatusCode = 429; // Too Many Requests
-        await context.HttpContext.Response.WriteAsync(
-            "Too many requests. Try again 3600s later.", token);
-    };
+    options.AddPolicy("vaultLimit", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 1,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
 });
 
 
