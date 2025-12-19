@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.RateLimiting;
 [Route("api/[controller]")]
 public class VaultController : ControllerBase
 {
-    
+
     private readonly IVaultRepository _vaultRepository;
     private readonly ILogger<VaultController> _logger;
 
@@ -85,5 +85,19 @@ public class VaultController : ControllerBase
             _logger.LogError(ex, "Error updating vault");
             return StatusCode(500, "An error occurred while updating the vault.");
         }
+    }
+
+    [HttpGet("top")]
+    public async Task<IActionResult> GetLatestVaults(
+        [FromQuery] int pageNo = 1,
+        [FromQuery] int limit = 10)
+    {
+        // Safety checks
+        if (pageNo < 1) pageNo = 1;
+        if (limit <= 0 || limit > 100) limit = 10;
+
+        var vaults = await _vaultRepository.GetLatestVaultsAsync(pageNo, limit);
+
+        return Ok(vaults);
     }
 }

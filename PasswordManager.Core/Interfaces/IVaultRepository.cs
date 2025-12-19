@@ -5,4 +5,6 @@ public interface IVaultRepository
     Task<List<Vault>> GetAllVaultAsync();
     Task CreateVaultAsync(Vault vault);
     Task UpdateVaultAsync(Vault vault);
+
+    Task<List<VaultSummary>> GetLatestVaultsAsync(int pageNo, int limit);
 }
