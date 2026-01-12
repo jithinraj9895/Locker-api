@@ -18,7 +18,7 @@ public class VaultRepository : IVaultRepository
 
     public async Task<List<Vault>> GetAllVaultAsync()
     {
-        return await _context.Vaults.ToListAsync();
+        return await _context.Vaults.AsNoTracking().ToListAsync();
     }
 
     public async Task<List<VaultSummary>> GetLatestVaultsAsync(int pageNo, int limit)
@@ -39,7 +39,7 @@ public class VaultRepository : IVaultRepository
 
     public Task<Vault?> GetVaultAsync(string vaultId)
     {
-        return _context.Vaults.FirstOrDefaultAsync(v => v.VaultId == vaultId);
+        return _context.Vaults.AsNoTracking().FirstOrDefaultAsync(v => v.VaultId == vaultId);
     }
 
     public async Task UpdateVaultAsync(Vault vault)
