@@ -1,6 +1,7 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using PasswordManager.Core.Interfaces;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,7 +20,12 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
 builder.Services.AddControllers();
+
 builder.Services.AddScoped<IVaultRepository, VaultRepository>();
+builder.Services.AddScoped<IPaymentGateway, PaytmGateway>();
+builder.Services.AddScoped<IPaymentGateway, RazorpayGateway>();
+builder.Services.AddScoped<IPaymentGatewayFactory, PaymentGatewayFactory>();
+builder.Services.AddScoped<IPaymentService, PaymentServices>();
 
 var allowedOrigin = Environment.GetEnvironmentVariable("FRONTEND_URL")
                     ?? "http://localhost:5173";
@@ -68,7 +74,6 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0
             }));
 });
-
 
 
 var app = builder.Build();
